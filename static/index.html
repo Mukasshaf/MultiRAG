@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MultiRAG — Multilingual Document Intelligence</title>
+  <meta name="description" content="Ask questions across multiple documents in any language. Powered by Ollama (Mistral) and Pinecone." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <header id="header">
+    <div class="header-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">MultiRAG</span>
+        <span class="brand-sub">Multilingual Document Intelligence</span>
+      </div>
+    </div>
+    <div class="header-status">
+      <div class="status-badge" id="statusBadge">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Checking...</span>
+      </div>
+      <button class="icon-btn" id="btnHealth" title="Refresh connection status">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div id="layout">
+
+    <aside id="sidebar">
+      <div class="sidebar-section">
+        <h2 class="sidebar-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Documents
+          <span class="doc-count-badge" id="docCount">0</span>
+        </h2>
+
+        <div id="uploadZone" class="upload-zone">
+          <input type="file" id="fileInput" multiple accept=".pdf,.txt,.docx,.csv,.json,.xlsx" hidden />
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          </div>
+          <p class="upload-label">Drop files here or <span class="upload-link">browse</span></p>
+          <p class="upload-hint">PDF · TXT · DOCX · CSV · JSON · XLSX</p>
+        </div>
+
+        <div id="uploadProgress" class="upload-progress hidden">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <p class="progress-text" id="progressText">Uploading...</p>
+        </div>
+      </div>
+
+      <div class="sidebar-section doc-list-section">
+        <div id="docList" class="doc-list">
+          <div class="empty-state" id="emptyDocs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            <p>No documents yet.<br/>Upload files to get started.</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main id="chatPanel">
+
+      <div id="chatMessages" class="chat-messages">
+        <div id="welcomeScreen" class="welcome-screen">
+          <div class="welcome-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h1>Ask your documents anything</h1>
+          <p>Upload documents in any language, then ask questions.<br/>Powered by <strong>Mistral</strong> (local) and <strong>Pinecone</strong> vector search.</p>
+          <div class="example-queries">
+            <button class="example-btn" onclick="setQuery('What are the main findings in the uploaded reports?')">What are the main findings?</button>
+            <button class="example-btn" onclick="setQuery('Summarize the key points across all documents.')">Summarize key points</button>
+            <button class="example-btn" onclick="setQuery('What languages are the documents written in?')">What languages are used?</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="chatInput" class="chat-input-area">
+        <div class="input-wrapper">
+          <textarea
+            id="queryInput"
+            class="query-textarea"
+            placeholder="Ask a question about your documents..."
+            rows="1"
+          ></textarea>
+          <button id="sendBtn" class="send-btn" title="Send (Enter)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+        <div class="input-meta">
+          <span class="input-hint">Enter to send · Shift+Enter for new line</span>
+          <span class="model-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+            mistral · local
+          </span>
+        </div>
+      </div>
+    </main>
+
+  </div>
+</div>
+
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+# Environment & secrets
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# uv
+uv.lock
+
+# Data & models (large files)
+data/*.pdf
+data/*.docx
+data/*.txt
+data/*.xlsx
+data/*.csv
+data/*.json
+!data/README.md
+data/.ingested_registry.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
