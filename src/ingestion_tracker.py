@@ -31,10 +31,7 @@ def _save_registry(registry: Dict[str, Any]) -> None:
 
 
 def is_ingested(file_path: Path) -> bool:
-    """
-    Return True if the file has already been ingested and hasn't changed.
-    Compares filename + mtime.
-    """
+    
     registry = _load_registry()
     key = file_path.name
     if key not in registry:
@@ -48,7 +45,6 @@ def is_ingested(file_path: Path) -> bool:
 
 
 def mark_ingested(file_path: Path) -> None:
-    """Record the file as ingested in the registry."""
     registry = _load_registry()
     registry[file_path.name] = {
         "mtime": file_path.stat().st_mtime,
@@ -60,7 +56,6 @@ def mark_ingested(file_path: Path) -> None:
 
 
 def unmark_ingested(filename: str) -> None:
-    """Remove a file from the registry (used when deleting a document)."""
     registry = _load_registry()
     if filename in registry:
         del registry[filename]
@@ -69,5 +64,4 @@ def unmark_ingested(filename: str) -> None:
 
 
 def list_ingested() -> Dict[str, Any]:
-    """Return the full registry as a dict."""
     return _load_registry()

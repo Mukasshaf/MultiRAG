@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MultiRAG — Multilingual Document Intelligence</title>
-  <meta name="description" content="Ask questions across multiple documents in any language. Powered by Ollama (Mistral) and Pinecone." />
+  <meta name="description" content="Ask questions across multiple documents in any language. Powered by Ollama and Pinecone." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/style.css?v=3" />
 </head>
 <body>
 
@@ -16,9 +16,6 @@
 
   <header id="header">
     <div class="header-brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
       <div class="brand-text">
         <span class="brand-name">MultiRAG</span>
         <span class="brand-sub">Multilingual Document Intelligence</span>
@@ -80,7 +77,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           </div>
           <h1>Ask your documents anything</h1>
-          <p>Upload documents in any language, then ask questions.<br/>Powered by <strong>Mistral</strong> (local) and <strong>Pinecone</strong> vector search.</p>
+          <p>Upload documents in any language, then ask questions.<br/>Powered by <strong id="welcomeModelName">Ollama</strong> (local)</p>
           <div class="example-queries">
             <button class="example-btn" onclick="setQuery('What are the main findings in the uploaded reports?')">What are the main findings?</button>
             <button class="example-btn" onclick="setQuery('Summarize the key points across all documents.')">Summarize key points</button>
@@ -102,10 +99,9 @@
           </button>
         </div>
         <div class="input-meta">
-          <span class="input-hint">Enter to send · Shift+Enter for new line</span>
-          <span class="model-tag">
+          <span class="model-tag" id="activeModelTag">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-            mistral · local
+            Loading...
           </span>
         </div>
       </div>
@@ -117,6 +113,6 @@
 
 <div id="toastContainer" class="toast-container"></div>
 
-<script src="/static/app.js"></script>
+<script src="/static/app.js?v=3"></script>
 </body>
 </html>

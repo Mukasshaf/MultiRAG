@@ -8,7 +8,7 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
-_BATCH_SIZE = 100  # Pinecone upsert batch limit
+_BATCH_SIZE = 100
 
 
 def _make_id(source_file: str, chunk_index: int) -> str:
@@ -17,7 +17,7 @@ def _make_id(source_file: str, chunk_index: int) -> str:
 
 
 def get_index():
-    """Return a live Pinecone Index object, creating the index if needed."""
+
     from pinecone import Pinecone, ServerlessSpec
 
     pc = Pinecone(api_key=settings.pinecone_api_key)
@@ -45,16 +45,10 @@ def get_index():
 
 
 def upsert_chunks(
-    chunks: List[Any],           # List[langchain_core.documents.Document]
+    chunks: List[Any],         
     embeddings: List[List[float]],
-    index=None,
-) -> int:
-    """
-    Upsert chunk vectors + metadata into Pinecone.
-
-    Returns:
-        Number of vectors upserted.
-    """
+    index=None,) -> int:
+    
     if index is None:
         index = get_index()
 
@@ -91,12 +85,7 @@ def query_index(
     top_k: int = 5,
     index=None,
 ) -> List[Dict[str, Any]]:
-    """
-    Query Pinecone for top-k similar vectors.
-
-    Returns:
-        List of dicts with keys: id, score, text, source_file, file_type, page, language, chunk_index
-    """
+   
     if index is None:
         index = get_index()
 

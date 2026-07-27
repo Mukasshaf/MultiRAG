@@ -4,17 +4,17 @@ import os
 from dataclasses import dataclass, field
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 
 @dataclass
 class Settings:
     pinecone_api_key: str = field(default_factory=lambda: os.getenv("PINECONE_API_KEY", ""))
-    pinecone_index_name: str = field(default_factory=lambda: os.getenv("PINECONE_INDEX_NAME", "multilingual-rag"))
+    pinecone_index_name: str = field(default_factory=lambda: os.getenv("PINECONE_INDEX_NAME", "multirag"))
     pinecone_region: str = field(default_factory=lambda: os.getenv("PINECONE_REGION", "us-east-1"))
 
     ollama_base_url: str = field(default_factory=lambda: os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"))
-    ollama_model: str = field(default_factory=lambda: os.getenv("OLLAMA_MODEL", "mistral"))
+    ollama_model: str = field(default_factory=lambda: os.getenv("OLLAMA_MODEL", "qwen3:8b"))
 
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"
     embedding_dim: int = 384
@@ -31,7 +31,6 @@ class Settings:
         self.registry_file = os.path.join(self.data_dir, ".ingested_registry.json")
 
     def validate(self) -> None:
-        """Raise if required secrets are missing."""
         missing = []
         if not self.pinecone_api_key:
             missing.append("PINECONE_API_KEY")

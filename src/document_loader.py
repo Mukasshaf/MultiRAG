@@ -70,7 +70,6 @@ def _load_json(path: Path) -> List[Document]:
 
 
 def _load_excel(path: Path) -> List[Document]:
-    """Load Excel using openpyxl and convert sheets to text documents."""
     import openpyxl
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
     docs = []
@@ -107,7 +106,6 @@ _LOADER_MAP = {
 
 
 def load_file(path: Path) -> List[Document]:
-    """Load a single file and return a list of LangChain Documents."""
     extention = path.suffix.lower()
     loader_fn = _LOADER_MAP.get(extention)
     if loader_fn is None:
@@ -123,10 +121,7 @@ def load_file(path: Path) -> List[Document]:
 
 
 def load_directory(data_dir: str) -> List[Document]:
-    """
-    Recursively scan data_dir for supported files and load them all.
-    Returns a flat list of LangChain Documents.
-    """
+  
     data_path = Path(data_dir).resolve()
     all_docs: List[Document] = []
 

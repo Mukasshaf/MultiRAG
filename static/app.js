@@ -27,6 +27,17 @@ async function checkHealth() {
     const data = await res.json();
     const ollamaOk = data.ollama === 'ok';
     const pineconeOk = data.pinecone === 'ok';
+    const activeModel = data.active_model || 'unknown';
+
+    // Update UI elements for model
+    const welcomeModelEl = document.getElementById('welcomeModelName');
+    if (welcomeModelEl) welcomeModelEl.textContent = activeModel;
+
+    const activeModelTag = document.getElementById('activeModelTag');
+    if (activeModelTag) {
+      activeModelTag.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg> ${activeModel} · local`;
+    }
+
     if (ollamaOk && pineconeOk) {
       statusDot.className = 'status-dot ok';
       statusText.textContent = 'All systems ready';
@@ -288,7 +299,7 @@ function appendMessage(role, text) {
 
   const avatarIcon = role === 'user'
     ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`
-    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`;
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>`;
 
   div.innerHTML = `
     <div class="message-avatar">${avatarIcon}</div>

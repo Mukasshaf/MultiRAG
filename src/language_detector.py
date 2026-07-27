@@ -11,7 +11,6 @@ _MIN_DETECT_LEN = 20
 
 
 def detect_language(text: str) -> str:
-    """Return ISO 639-1 language code (e.g. 'en', 'fr', 'ar') or 'unknown'."""
     if len(text.strip()) < _MIN_DETECT_LEN:
         return "unknown"
     try:
@@ -22,10 +21,6 @@ def detect_language(text: str) -> str:
 
 
 def tag_language(chunks: List[Document]) -> List[Document]:
-    """
-    Iterate over chunks and attach 'language' to each chunk's metadata in-place.
-    Returns the same list (mutated).
-    """
     lang_counts: dict[str, int] = {}
     for chunk in chunks:
         lang = detect_language(chunk.page_content)

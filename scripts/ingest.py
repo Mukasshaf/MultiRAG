@@ -25,7 +25,7 @@ def main():
     from src.ingestor import ingest_directory
 
     logger.info("═" * 50)
-    logger.info("  MultiRAG — Document Ingestion Pipeline")
+    logger.info("  MultiRAG : Document Ingestion Pipeline")
     logger.info("═" * 50)
 
     results = ingest_directory(data_dir=args.dir, force=args.force)
@@ -41,7 +41,7 @@ def main():
     errors  = len(results) - success - skipped
     total   = sum(r["chunks_upserted"] for r in results)
 
-    print(f"\n✓ Success: {success}  ↷ Skipped: {skipped}  ✗ Errors: {errors}")
+    print(f"\nSuccess: {success} , Skipped: {skipped} , Errors: {errors}")
     print(f"  Total chunks upserted: {total}")
     print()
 

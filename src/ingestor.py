@@ -15,17 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def ingest_file(file_path: Path, index=None, force: bool = False) -> dict:
-    """
-    Ingest a single file into Pinecone.
-
-    Args:
-        file_path: Path to the document.
-        index:     Reuse an existing Pinecone index handle.
-        force:     If True, re-ingest even if already tracked.
-
-    Returns:
-        dict with keys: filename, status, chunks_upserted
-    """
+    
     result = {"filename": file_path.name, "status": "skipped", "chunks_upserted": 0}
 
     if not force and is_ingested(file_path):
@@ -58,16 +48,6 @@ def ingest_file(file_path: Path, index=None, force: bool = False) -> dict:
 
 
 def ingest_directory(data_dir: Optional[str] = None, force: bool = False) -> List[dict]:
-    """
-    Scan the data directory and ingest all new/changed supported files.
-
-    Args:
-        data_dir: Path override (defaults to settings.data_dir).
-        force:    Re-ingest all files regardless of registry.
-
-    Returns:
-        List of result dicts (one per file).
-    """
     dir_path = Path(data_dir or settings.data_dir).resolve()
     logger.info(f"[INGEST] Scanning directory: {dir_path}")
 
@@ -87,7 +67,7 @@ def ingest_directory(data_dir: Optional[str] = None, force: bool = False) -> Lis
     total_chunks = sum(r["chunks_upserted"] for r in results)
 
     logger.info(
-        f"[INGEST] Done. success={success}, skipped={skipped}, errors={errors}, "
+        f"[INGEST] Done. \nsuccess={success}, skipped={skipped}, errors={errors}, "
         f"total_chunks_upserted={total_chunks}"
     )
     return results

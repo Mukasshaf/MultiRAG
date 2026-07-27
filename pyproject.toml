@@ -1,7 +1,7 @@
 [project]
-name = "multilingual-rag"
+name = "MultiRag"
 version = "0.1.0"
-description = "Multi-document multilingual RAG system with Ollama + Pinecone"
+description = "Rag document pipeline"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

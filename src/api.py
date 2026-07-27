@@ -20,8 +20,8 @@ from src.rag_chain import ask_stream
 
 logger = logging.getLogger(__name__)
 app = FastAPI(
-    title="Multilingual RAG API",
-    description="Local Ollama + Pinecone multi-document RAG system"
+    title="MultiRag",
+    description="RAG system"
     
 )
 
@@ -52,7 +52,6 @@ async def serve_ui():
 
 @app.get("/health")
 async def health_check():
-    """Check Ollama and Pinecone connectivity."""
     status = {"ollama": "unknown", "pinecone": "unknown"}
 
     try:
@@ -61,6 +60,7 @@ async def health_check():
         available = [m["model"] for m in models.get("models", [])]
         status["ollama"] = "ok" if settings.ollama_model in available else f"model '{settings.ollama_model}' not found"
         status["ollama_models"] = available
+        status["active_model"] = settings.ollama_model
     except Exception as e:
         status["ollama"] = f"error: {e}"
 
@@ -77,10 +77,7 @@ async def health_check():
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
-    """
-    Stream RAG response as Server-Sent Events (SSE).
-    The client reads the stream token-by-token for a real-time typing effect.
-    """
+    
     if not request.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty.")
 
@@ -102,10 +99,7 @@ async def chat(request: ChatRequest):
 
 @app.post("/chat/full")
 async def chat_full(request: ChatRequest):
-    """
-    Non-streaming RAG endpoint — returns full answer + sources in one JSON response.
-    Useful for API integrations.
-    """
+    
     from src.rag_chain import ask
     if not request.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty.")
@@ -119,10 +113,7 @@ async def chat_full(request: ChatRequest):
 
 @app.post("/upload")
 async def upload_documents(files: List[UploadFile] = File(...)):
-    """
-    Upload one or more documents → save to data/ → auto-ingest into Pinecone.
-    Supported: PDF, TXT, DOCX, CSV, JSON, XLSX
-    """
+   
     data_path = Path(settings.data_dir)
     data_path.mkdir(parents=True, exist_ok=True)
 
@@ -164,9 +155,7 @@ async def upload_documents(files: List[UploadFile] = File(...)):
 
 @app.get("/documents")
 async def list_documents():
-    """
-    List all ingested documents with their metadata from the registry.
-    """
+    
     registry = list_ingested()
     data_path = Path(settings.data_dir)
 
@@ -187,12 +176,6 @@ async def list_documents():
 
 @app.delete("/documents/{filename}")
 async def delete_document(filename: str):
-    """
-    Remove a document:
-      1. Delete its vectors from Pinecone
-      2. Remove from the registry
-      3. Delete the file from disk (optional — always done here)
-    """
     data_path = Path(settings.data_dir)
     file_path = data_path / filename
 
@@ -213,7 +196,6 @@ async def delete_document(filename: str):
 
 @app.get("/index/stats")
 async def index_stats():
-    """Return Pinecone index statistics."""
     try:
         return get_index_stats()
     except Exception as e:

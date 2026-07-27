@@ -28,6 +28,4 @@ Drop your documents here. The RAG system will automatically pick them up.
 
 ## Notes
 
-- `.ingested_registry.json` is auto-created here — do not delete it, or files will be re-ingested.
 - Scanned PDFs (image-only) are not supported without OCR. Use text-layer PDFs.
-- Very large files (>100 MB) may be slow to process.

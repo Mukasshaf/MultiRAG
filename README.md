@@ -10,7 +10,7 @@ A production-ready, **fully local** RAG (Retrieval-Augmented Generation) system 
 | Python 3.10+ | [python.org](https://python.org) |
 | uv | `pip install uv` |
 | Ollama | [ollama.ai](https://ollama.ai) |
-| Pinecone account | [pinecone.io](https://pinecone.io) (free tier works) |
+| Pinecone account | [pinecone.io](https://pinecone.io) |
 
 ## Quick Start
 
@@ -30,16 +30,16 @@ copy .env.example .env
 Edit `.env` and fill in:
 ```env
 PINECONE_API_KEY=your_key_here
-PINECONE_INDEX_NAME=multilingual-rag   # will be auto-created
+PINECONE_INDEX_NAME=multirag
 PINECONE_REGION=us-east-1
-OLLAMA_MODEL=mistral
+OLLAMA_MODEL=qwen3:8b
 ```
 
 ### 3. Pull the Ollama model
 
 ```bash
-ollama pull mistral
-ollama serve          # keep this running in a separate terminal
+ollama pull qwen3:8b
+ollama serve         
 ```
 
 ### 4. Start the web server
@@ -94,7 +94,7 @@ All settings are in `.env`:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `OLLAMA_MODEL` | `mistral` | Ollama model to use |
+| `OLLAMA_MODEL` | `qwen3:8b` | Ollama model to use |
 | `CHUNK_SIZE` | `1000` | Characters per chunk |
 | `CHUNK_OVERLAP` | `200` | Overlap between chunks |
 | `TOP_K_RESULTS` | `5` | Pinecone results per query |

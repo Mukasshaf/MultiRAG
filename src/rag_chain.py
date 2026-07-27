@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 _SYSTEM_PROMPT = """You are a helpful, multilingual AI assistant. 
 You answer questions based ONLY on the provided context documents.
-If the context doesn't contain the answer, say so clearly do not make things up.
+If the context doesn't contain the answer, say so clearly do not make things up or create any information.
 Always cite the source document and page number when you use information from it.
 Answer in the same language as the user's question."""
 
@@ -28,7 +28,6 @@ _PROMPT_TEMPLATE = """{system}
 
 
 def _build_context(hits: List[Dict[str, Any]]) -> str:
-    """Format Pinecone hits into a readable context block."""
     lines = []
     for i, hit in enumerate(hits, 1):
         src = hit.get("source_file", "unknown")
@@ -44,16 +43,7 @@ def _build_context(hits: List[Dict[str, Any]]) -> str:
 
 
 def ask(query: str, top_k: int | None = None) -> Dict[str, Any]:
-    """
-    Full RAG pipeline (blocking / non-streaming).
-
-    Returns:
-        {
-          "answer": str,
-          "sources": List[dict],
-          "query": str,
-        }
-    """
+    
     import ollama
 
     k = top_k or settings.top_k

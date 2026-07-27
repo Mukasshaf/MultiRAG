@@ -22,17 +22,7 @@ def _get_model():
 
 
 def embed_texts(texts: List[str], batch_size: int = 64, show_progress: bool = False) -> List[List[float]]:
-    """
-    Embed a list of strings.
-
-    Args:
-        texts:         Input strings.
-        batch_size:    Batch size for encoding (default 64).
-        show_progress: Show tqdm progress bar.
-
-    Returns:
-        List of float vectors (each of length 384).
-    """
+   
     model = _get_model()
     if not texts:
         return []
@@ -48,5 +38,4 @@ def embed_texts(texts: List[str], batch_size: int = 64, show_progress: bool = Fa
 
 
 def embed_query(query: str) -> List[float]:
-    """Embed a single query string."""
     return embed_texts([query])[0]

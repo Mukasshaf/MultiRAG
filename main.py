@@ -7,7 +7,7 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 
-from src.api import app  # noqa: F401
+from src.api import app  
 
 if __name__ == "__main__":
     uvicorn.run(

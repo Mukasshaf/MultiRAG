@@ -15,19 +15,8 @@ logger = logging.getLogger(__name__)
 def chunk_documents(
     documents: List[Document],
     chunk_size: int | None = None,
-    chunk_overlap: int | None = None,
-) -> List[Document]:
-    """
-    Split documents into chunks and enrich metadata.
-
-    Args:
-        documents:     Raw list of LangChain Documents from document_loader.
-        chunk_size:    Override default from settings.
-        chunk_overlap: Override default from settings.
-
-    Returns:
-        List of chunk Documents with full metadata.
-    """
+    chunk_overlap: int | None = None,) -> List[Document]:
+   
     cs = chunk_size or settings.chunk_size
     co = chunk_overlap or settings.chunk_overlap
 
