@@ -4,7 +4,7 @@ import logging
 import os
 import shutil
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +17,7 @@ from src.ingestion_tracker import list_ingested, unmark_ingested
 from src.ingestor import ingest_file
 from src.pinecone_store import delete_by_source, get_index, get_index_stats
 from src.rag_chain import ask_stream
+from src.memory import get_or_create_session
 
 logger = logging.getLogger(__name__)
 app = FastAPI(
@@ -36,11 +37,11 @@ _static_dir = Path(__file__).parent.parent / "static"
 if _static_dir.exists():
     app.mount("/static", StaticFiles(directory=str(_static_dir)), name="static")
 
-
 class ChatRequest(BaseModel):
     query: str
+    session_id: Optional[str] = None
     top_k: int = 5
-
+    filters: Optional[dict] = None
 
 @app.get("/", include_in_schema=False)
 async def serve_ui():
@@ -48,7 +49,6 @@ async def serve_ui():
     if html_path.exists():
         return FileResponse(str(html_path))
     return {"message": "Multilingual RAG API v2 — see /docs"}
-
 
 @app.get("/health")
 async def health_check():
@@ -74,16 +74,17 @@ async def health_check():
 
     return status
 
-
 @app.post("/chat")
 async def chat(request: ChatRequest):
     
     if not request.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty.")
+        
+    session_id = get_or_create_session(request.session_id)
 
     def generate():
         try:
-            for token in ask_stream(request.query, top_k=request.top_k):
+            for token in ask_stream(session_id, request.query, top_k=request.top_k, filters=request.filters):
                 yield f"data: {token}\n\n"
             yield "data: [DONE]\n\n"
         except Exception as e:
@@ -96,20 +97,21 @@ async def chat(request: ChatRequest):
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
 
-
 @app.post("/chat/full")
 async def chat_full(request: ChatRequest):
     
     from src.rag_chain import ask
     if not request.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty.")
+        
+    session_id = get_or_create_session(request.session_id)
+        
     try:
-        result = ask(request.query, top_k=request.top_k)
+        result = ask(session_id, request.query, top_k=request.top_k, filters=request.filters)
         return result
     except Exception as e:
         logger.error(f"[API] Chat/full error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.post("/upload")
 async def upload_documents(files: List[UploadFile] = File(...)):
@@ -152,7 +154,6 @@ async def upload_documents(files: List[UploadFile] = File(...)):
 
     return {"uploaded": len(files), "results": results}
 
-
 @app.get("/documents")
 async def list_documents():
     
@@ -173,7 +174,6 @@ async def list_documents():
     documents.sort(key=lambda d: d["ingested_at"], reverse=True)
     return {"total": len(documents), "documents": documents}
 
-
 @app.delete("/documents/{filename}")
 async def delete_document(filename: str):
     data_path = Path(settings.data_dir)
@@ -192,7 +192,6 @@ async def delete_document(filename: str):
         logger.info(f"[API] Deleted file from disk: {file_path}")
 
     return {"status": "deleted", "filename": filename}
-
 
 @app.get("/index/stats")
 async def index_stats():

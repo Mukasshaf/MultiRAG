@@ -17,7 +17,7 @@ const btnHealth      = document.getElementById('btnHealth');
 const toastContainer = document.getElementById('toastContainer');
 
 let isStreaming = false;
-
+let currentSessionId = null;
 
 async function checkHealth() {
   statusDot.className = 'status-dot';
@@ -57,9 +57,6 @@ async function checkHealth() {
 }
 btnHealth.addEventListener('click', checkHealth);
 
-
-
-
 async function refreshDocList() {
   try {
     const res = await fetch('/documents');
@@ -69,13 +66,11 @@ async function refreshDocList() {
 
     if (docs.length === 0) {
       emptyDocs.classList.remove('hidden');
-      // Remove any existing doc cards
       docList.querySelectorAll('.doc-card').forEach(el => el.remove());
       return;
     }
     emptyDocs.classList.add('hidden');
 
-    // Rebuild list
     docList.querySelectorAll('.doc-card').forEach(el => el.remove());
     docs.forEach(doc => docList.appendChild(buildDocCard(doc)));
   } catch (e) {
@@ -127,7 +122,6 @@ async function deleteDocument(filename) {
   }
 }
 
-
 uploadZone.addEventListener('click', () => fileInput.click());
 uploadZone.addEventListener('dragover', (e) => {
   e.preventDefault();
@@ -151,7 +145,6 @@ async function handleFiles(files) {
   uploadProgress.classList.remove('hidden');
   progressFill.style.width = '0%';
   progressText.textContent = `Uploading ${files.length} file(s)...`;
-
 
   let fakeProgress = 0;
   const ticker = setInterval(() => {
@@ -189,8 +182,6 @@ async function handleFiles(files) {
     fileInput.value = '';
   }
 }
-
-
 
 queryInput.addEventListener('input', () => {
   queryInput.style.height = 'auto';
@@ -237,16 +228,24 @@ async function sendMessage() {
   let sources = [];
 
   try {
+    const payload = { query, top_k: 5 };
+    if (currentSessionId) {
+      payload.session_id = currentSessionId;
+    }
+
     const res = await fetch('/chat/full', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, top_k: 5 }),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) throw new Error(`Server error ${res.status}`);
     const data = await res.json();
     fullText = data.answer || '';
     sources = data.sources || [];
+    if (data.session_id) {
+      currentSessionId = data.session_id;
+    }
   } catch (e) {
     fullText = `⚠️ Error: ${e.message}`;
     toast(`Chat error: ${e.message}`, 'error');
@@ -273,7 +272,6 @@ function typewriterRender(element, text) {
       scrollToBottom();
       if (i >= text.length) {
         clearInterval(interval);
-        // Re-render as proper HTML (preserving line breaks)
         element.innerHTML = markdownToHtml(text);
         resolve();
       }
@@ -282,6 +280,9 @@ function typewriterRender(element, text) {
 }
 
 function markdownToHtml(text) {
+  if (typeof marked !== 'undefined') {
+    return marked.parse(text);
+  }
   return text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
@@ -359,7 +360,6 @@ function appendSources(messageEl, sources) {
   scrollToBottom();
 }
 
-
 function toast(message, type = 'info', duration = 4000) {
   const icons = {
     success: `<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`,
@@ -378,7 +378,6 @@ function toast(message, type = 'info', duration = 4000) {
   }, duration);
 }
 
-
 function scrollToBottom() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -395,7 +394,6 @@ function truncate(str, max) {
   if (!str) return '';
   return str.length <= max ? str : str.slice(0, max) + '…';
 }
-
 
 (async function init() {
   await checkHealth();

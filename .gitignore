@@ -1,7 +1,5 @@
-
 .env
 *.env.local
-
 
 __pycache__/
 *.py[cod]
@@ -15,27 +13,18 @@ build/
 .eggs/
 
 
-uv.lock
-
-
-data/*.pdf
-data/*.docx
-data/*.txt
-data/*.xlsx
-data/*.csv
-data/*.json
+# Data
+data/*
 !data/README.md
-data/.ingested_registry.json
 
 
 .vscode/
 .idea/
 *.swp
-
-
 .DS_Store
 Thumbs.db
 
-
 .ipynb_checkpoints/
 *.ipynb
+
+MultiRAG_Architecture.drawio

@@ -11,7 +11,6 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
-
 def _load_registry() -> Dict[str, Any]:
     reg_path = Path(settings.registry_file)
     if reg_path.exists():
@@ -22,13 +21,11 @@ def _load_registry() -> Dict[str, Any]:
             logger.warning("[REGISTRY] Registry file corrupted — starting fresh.")
     return {}
 
-
 def _save_registry(registry: Dict[str, Any]) -> None:
     reg_path = Path(settings.registry_file)
     reg_path.parent.mkdir(parents=True, exist_ok=True)
     with open(reg_path, "w", encoding="utf-8") as f:
         json.dump(registry, f, indent=2, ensure_ascii=False)
-
 
 def is_ingested(file_path: Path) -> bool:
     
@@ -43,7 +40,6 @@ def is_ingested(file_path: Path) -> bool:
     except OSError:
         return False
 
-
 def mark_ingested(file_path: Path) -> None:
     registry = _load_registry()
     registry[file_path.name] = {
@@ -54,14 +50,12 @@ def mark_ingested(file_path: Path) -> None:
     _save_registry(registry)
     logger.info(f"[REGISTRY] Marked as ingested: {file_path.name}")
 
-
 def unmark_ingested(filename: str) -> None:
     registry = _load_registry()
     if filename in registry:
         del registry[filename]
         _save_registry(registry)
         logger.info(f"[REGISTRY] Removed from registry: {filename}")
-
 
 def list_ingested() -> Dict[str, Any]:
     return _load_registry()

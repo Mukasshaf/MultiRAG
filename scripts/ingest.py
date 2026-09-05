@@ -29,12 +29,12 @@ def main():
     logger.info("═" * 50)
 
     results = ingest_directory(data_dir=args.dir, force=args.force)
-    print("\n" + "─" * 60)
+    print("\n" + "-" * 60)
     print(f"{'FILE':<35} {'STATUS':<15} {'CHUNKS':>8}")
-    print("─" * 60)
+    print("-" * 60)
     for r in results:
         print(f"{r['filename'][:34]:<35} {r['status']:<15} {r['chunks_upserted']:>8}")
-    print("─" * 60)
+    print("-" * 60)
 
     success = sum(1 for r in results if r["status"] == "success")
     skipped = sum(1 for r in results if r["status"] == "skipped")
