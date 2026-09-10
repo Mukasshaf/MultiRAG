@@ -1,112 +1,116 @@
-# MultiRAG v2 — Multilingual Document Intelligence
 
-A production-ready, **fully local** RAG (Retrieval-Augmented Generation) system that lets you ask questions across multiple documents in **any language**.
+# MultiRAG v2: Multilingual Document Intelligence
+A production-ready, enterprise-grade local RAG (Retrieval-Augmented Generation) platform designed for multilingual document question-answering.
 
+MultiRAG combines hybrid search (dense embeddings + BM25 sparse keyword matching), cross-encoder reranking, multi-strategy document chunking, and conversational memory with query contextualization, streaming responses locally via Ollama.
 
-## Prerequisites
+---
 
-| Tool | Install |
-|------|---------|
-| Python 3.10+ | [python.org](https://python.org) |
-| uv | `pip install uv` |
-| Ollama | [ollama.ai](https://ollama.ai) |
-| Pinecone account | [pinecone.io](https://pinecone.io) |
+## Key Features
 
-## Quick Start
+* **Hybrid Search (Dense + Sparse)**: Combines semantic vector similarity (HuggingFace `all-MiniLM-L6-v2`, 384 dimensions) with keyword-exact BM25 sparse token matching in Pinecone Serverless using tunable convex alpha blending:
 
-### 1. Clone & install dependencies
+  `Score = α · DenseScore + (1 - α) · SparseScore`
+
+* **Two-Stage Retrieval with Cross-Encoder**: Queries retrieve top candidates (default 15), which are reranked using a pairwise cross-encoder (`BAAI/bge-reranker-base`) down to the top-$k$ most authoritative chunks.
+* **Modality-Aware Multi-Strategy Chunking**: Replaces naive character splitting with semantic routing:
+  * **Hierarchical Parent-Child**: Long PDFs and textbooks index concise 400-character child chunks while retrieving full parent sections.
+  * **Header-Ancestor**: Markdown and Word documents preserve structural outline hierarchy.
+  * **Slide-Node**: PPTX files are grouped per slide with titles and embedded tables.
+  * **Schema-Aware**: JSON datasets are parsed by records without broken syntax.
+  * **Recursive Sentence-Boundary**: Text and short PDFs preserve grammatical sentences using NLTK boundary detection.
+* **Conversational Memory & Query Condensation**: Multi-turn chat sessions maintain rolling turn windows. Pronouns and follow-ups are contextualized into standalone search queries before retrieval.
+* **Multilingual Support**: Automatic language detection across 55+ languages ensures answers and citations respond in the user's language.
+* **Real-Time Token Streaming**: True Server-Sent Events (SSE) streaming direct from Ollama into a modern glassmorphic web interface.
+
+---
+
+## Architecture
+
+<p align="center">
+  <img src="assets/MultiRAG_Architecture.png" alt="MultiRAG 2.0 System Architecture" width="100%" />
+</p>
+
+---
+
+## Technology Stack
+
+| Layer | Component | Description |
+| --- | --- | --- |
+| **Backend & API** | **FastAPI** | Async REST API with Server-Sent Events (SSE) streaming |
+| **Vector Database** | **Pinecone Serverless** | Hybrid index storing dense vectors (384-d) + sparse BM25 indices |
+| **Local LLM** | **Ollama** | Local LLM inference (`qwen3:8b`) |
+| **Dense Embeddings** | **Sentence-Transformers** | `sentence-transformers/all-MiniLM-L6-v2` (384-d) |
+| **Sparse Embeddings** | **Pinecone Text (BM25)** | Corpus-fitted statistical keyword frequency encoder |
+| **Reranker** | **BAAI Cross-Encoder** | `BAAI/bge-reranker-base` for cross-attention scoring |
+
+---
+
+## Quick Start Guide
+
+### 1. Setup Environment
+
+Requires Python 3.10+, [uv](https://github.com/astral-sh/uv), and [Ollama](https://ollama.com).
 
 ```bash
-cd "C:\My Drive\codes\rag 2"
+git clone https://github.com/Mukasshaf/MultiRAG.git
+cd MultiRAG
 uv sync
+
 ```
 
-### 2. Configure environment
+### 2. Configure Credentials
+
+Copy the template and configure your Pinecone credentials and Ollama endpoint:
 
 ```bash
-copy .env.example .env
+# Windows PowerShell
+Copy-Item .env.example .env
+
+# Linux / macOS
+cp .env.example .env
+
 ```
 
-Edit `.env` and fill in:
-```env
-PINECONE_API_KEY=your_key_here
-PINECONE_INDEX_NAME=multirag
-PINECONE_REGION=us-east-1
-OLLAMA_MODEL=qwen3:8b
-```
+### 3. Run Application
 
-### 3. Pull the Ollama model
+Start the local model engine and web server:
 
 ```bash
+ollama serve
 ollama pull qwen3:8b
-ollama serve         
-```
-
-### 4. Start the web server
-
-```bash
 uv run python main.py
+
 ```
 
-Open **http://localhost:8000** in your browser.
-
-### 5. Upload documents & ask questions
-
-- Drag & drop files into the sidebar, or use the upload button.
-- Type your question in any language — the system will answer using your documents.
-- Click **Sources** below any answer to see exactly which document + page was used.
+Access the UI at `http://localhost:8000`. Interactive API documentation is available at `http://localhost:8000/docs`.
 
 ---
 
-## Manual Ingestion (CLI)
+## Batch Ingestion & Evaluation
 
-```bash
-# Ingest all new files in data/
-uv run python scripts/ingest.py
-
-# Force re-ingest all files
-uv run python scripts/ingest.py --force
-
-# Custom directory
-uv run python scripts/ingest.py --dir path/to/docs
-```
+For document batch ingestion, BM25 vocabulary fitting, and golden-set RAG evaluation benchmarks, refer to the [Scripts Documentation](scripts/README.md).
 
 ---
 
-## API Reference
+## REST API Reference
+
+Interactive Swagger documentation is available at `http://localhost:8000/docs`.
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET`  | `/` | Web UI |
-| `GET`  | `/health` | Ollama + Pinecone status |
-| `POST` | `/chat/full` | Query → JSON `{answer, sources}` |
-| `POST` | `/upload` | Upload files (multipart) |
-| `GET`  | `/documents` | List ingested docs |
-| `DELETE` | `/documents/{filename}` | Delete doc + Pinecone vectors |
-| `GET`  | `/index/stats` | Pinecone index statistics |
-| `GET`  | `/docs` | FastAPI Swagger UI |
+| --- | --- | --- |
+| `GET` | `/` | Web application interface |
+| `GET` | `/health` | Live health probe checking Ollama and Pinecone connections |
+| `POST` | `/chat` | SSE endpoint streaming real-time generated tokens (`session_id`, `query`) |
+| `POST` | `/chat/full` | Non-streaming endpoint returning full JSON payload |
+| `POST` | `/upload` | Multipart file upload; triggers ingestion and Pinecone indexing |
+| `GET` | `/documents` | Lists all indexed documents, chunk counts, and timestamps |
+| `DELETE` | `/documents/{filename}` | Deletes document vectors from Pinecone and removes local file |
+| `GET` | `/index/stats` | Returns Pinecone index statistics |
+| `GET` | `/sessions/{session_id}` | Retrieves multi-turn conversation history |
 
 ---
 
-## Customization
+## License
 
-All settings are in `.env`:
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OLLAMA_MODEL` | `qwen3:8b` | Ollama model to use |
-| `CHUNK_SIZE` | `1000` | Characters per chunk |
-| `CHUNK_OVERLAP` | `200` | Overlap between chunks |
-| `TOP_K_RESULTS` | `5` | Pinecone results per query |
-| `PINECONE_REGION` | `us-east-1` | Pinecone serverless region |
-
----
-
-## Supported Languages (embedding)
-
-The `paraphrase-multilingual-MiniLM-L12-v2` model supports **50+ languages** including:
-English · French · German · Spanish · Portuguese · Italian · Dutch · Polish · Russian · Chinese · Japanese · Korean · Arabic · Hindi · and many more.
-
----
-
-*Built on: LangChain · sentence-transformers · Pinecone · Ollama · FastAPI*
+MIT License. Free for personal, academic, and commercial use.

@@ -21,14 +21,17 @@ Answer in the same language as the user's question."""
 _PROMPT_TEMPLATE = """## Context Documents
 {context}
 
+## User Question
 {query}
 
-Given the following conversation history (if any) and the user's latest question, rephrase the latest question into a self-contained, standalone question or statement.
+Answer the question based ONLY on the context documents above. If the context does not contain the answer, state that clearly without making up information. Answer in the same language as the user's question."""
+
+_REWRITE_PROMPT = """Given the following conversation history (if any) and the user's latest question, rephrase the latest question into a self-contained, standalone question or statement in the same language.
 
 Rules:
-1. Resolve Pronouns: If the latest question contains pronouns (e.g., "it", "they", "this") or implicitly refers to previous topics/sentences, replace them with the actual specific entities from the history.
+1. Resolve Pronouns: If the latest question contains pronouns (e.g., "it", "they", "this", or equivalents in other languages) or implicitly refers to previous topics/sentences, replace them with the actual specific entities from the history.
 2. Remove Meta-Talk: Strip out conversational filler like "briefly explain", "tell me", "what is", but keep the core grammatical structure intact. Do not aggressively shrink it to just keywords.
-3. Keep Context: The result should be a clear, grammatically correct phrase/question that makes complete sense on its own.
+3. Keep Context & Language: The result should be a clear, grammatically correct phrase/question that makes complete sense on its own. Maintain the exact same language as the user's latest question.
 4. Do NOT answer the question. Only output the rewritten question/phrase/statement.
 5. Do NOT wrap the output in quotes.
 

@@ -26,7 +26,7 @@ def rerank(
         return candidates
 
     reranker = _get_reranker(model_name)
-    pairs = [(query, c.get("text", "")) for c in candidates]
+    pairs = [(query, c.get("payload_text", "")) for c in candidates]
     scores = reranker.predict(pairs)
 
     for c, s in zip(candidates, scores):
@@ -38,3 +38,4 @@ def rerank(
         f"Top score: {ranked[0]['rerank_score']:.4f}"
     )
     return ranked[:top_n]
+
