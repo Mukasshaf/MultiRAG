@@ -8,7 +8,7 @@ MultiRAG combines hybrid search (dense embeddings + BM25 sparse keyword matching
 
 ## Key Features
 
-* **Hybrid Search (Dense + Sparse)**: Combines semantic vector similarity (HuggingFace `all-MiniLM-L6-v2`, 384 dimensions) with keyword-exact BM25 sparse token matching in Pinecone Serverless using tunable convex alpha blending:
+* **Hybrid Search (Dense + Sparse)**: Combines semantic vector similarity (HuggingFace `paraphrase-multilingual-MiniLM-L12-v2`, 384 dimensions) with keyword-exact BM25 sparse token matching in Pinecone Serverless using tunable convex alpha blending:
 
   `Score = α · DenseScore + (1 - α) · SparseScore`
 
@@ -40,7 +40,7 @@ MultiRAG combines hybrid search (dense embeddings + BM25 sparse keyword matching
 | **Backend & API** | **FastAPI** | Async REST API with Server-Sent Events (SSE) streaming |
 | **Vector Database** | **Pinecone Serverless** | Hybrid index storing dense vectors (384-d) + sparse BM25 indices |
 | **Local LLM** | **Ollama** | Local LLM inference (`qwen3:8b`) |
-| **Dense Embeddings** | **Sentence-Transformers** | `sentence-transformers/all-MiniLM-L6-v2` (384-d) |
+| **Dense Embeddings** | **Sentence-Transformers** | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (384-d) |
 | **Sparse Embeddings** | **Pinecone Text (BM25)** | Corpus-fitted statistical keyword frequency encoder |
 | **Reranker** | **BAAI Cross-Encoder** | `BAAI/bge-reranker-base` for cross-attention scoring |
 
@@ -114,3 +114,4 @@ Interactive Swagger documentation is available at `http://localhost:8000/docs`.
 ## License
 
 MIT License. Free for personal, academic, and commercial use.
+
